@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AiScoPre · 8 队多模型预测擂台</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #010313;
+        --panel: rgba(13, 18, 38, 0.8);
+        --stroke: rgba(148, 163, 184, 0.25);
+        --accent-blue: #38bdf8;
+        --accent-purple: #a78bfa;
+        --accent-orange: #fb923c;
+        --accent-green: #4ade80;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.25), transparent 50%),
+          radial-gradient(circle at 80% 0%, rgba(167, 139, 250, 0.2), transparent 55%),
+          linear-gradient(180deg, #010313 0%, #050913 100%);
+        color: #e2e8f0;
+        padding-bottom: 4rem;
+      }
+
+      .orbital {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 30% 40%, rgba(59, 130, 246, 0.2), transparent 40%),
+          radial-gradient(circle at 70% 20%, rgba(248, 113, 113, 0.2), transparent 60%);
+        filter: blur(70px);
+        z-index: 0;
+      }
+
+      main {
+        position: relative;
+        z-index: 1;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      header.hero,
+      section.panel {
+        background: var(--panel);
+        border-radius: 24px;
+        border: 1px solid var(--stroke);
+        padding: 2rem;
+        box-shadow: 0 20px 60px rgba(2, 6, 23, 0.65);
+      }
+
+      header.hero {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 2rem;
+      }
+
+      header.hero h1 {
+        margin: 0 0 0.6rem;
+        font-size: clamp(2rem, 3vw, 3.2rem);
+        letter-spacing: 0.04em;
+      }
+
+      header.hero p {
+        margin: 0;
+        line-height: 1.6;
+        color: rgba(226, 232, 240, 0.85);
+      }
+
+      .hero-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .badge {
+        padding: 0.35rem 0.9rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .metric-wrap {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .metric-card {
+        flex: 1 1 150px;
+        background: rgba(2, 6, 23, 0.75);
+        border-radius: 18px;
+        padding: 1rem 1.2rem;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+      }
+
+      .metric-card h3 {
+        margin: 0;
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        color: rgba(226, 232, 240, 0.7);
+      }
+
+      .metric-card p {
+        margin: 0.45rem 0 0;
+        font-size: 1.9rem;
+        font-weight: 600;
+      }
+
+      section.panel h2 {
+        margin: 0 0 1rem;
+        font-size: 1.4rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(248, 250, 252, 0.85);
+      }
+
+      .control-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .control-card {
+        border: 1px solid var(--stroke);
+        border-radius: 18px;
+        padding: 1.2rem;
+        background: rgba(15, 23, 42, 0.75);
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+      }
+
+      label {
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.75);
+      }
+
+      select,
+      input[type="text"],
+      button,
+      textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: rgba(2, 6, 23, 0.65);
+        color: inherit;
+        font-size: 1rem;
+      }
+
+      button.primary {
+        background: linear-gradient(120deg, #38bdf8, #a78bfa);
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      button.primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 15px 30px rgba(56, 189, 248, 0.35);
+      }
+
+      button.ghost {
+        background: transparent;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        cursor: pointer;
+      }
+
+      .status-line {
+        margin-top: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        font-size: 0.95rem;
+      }
+
+      .status-line.error {
+        border-color: rgba(248, 113, 113, 0.7);
+        color: #fecaca;
+      }
+
+      .prediction-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+      }
+
+      .scoreboard {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1.2rem 1.4rem;
+        border-radius: 20px;
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.12), transparent 60%),
+          rgba(3, 7, 18, 0.7);
+      }
+
+      .team-side {
+        text-align: center;
+      }
+
+      .team-side h3 {
+        margin: 0.3rem 0 0;
+        font-size: 1.5rem;
+      }
+
+      .team-side span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.2rem 0.8rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+      }
+
+      .scoreboard .versus {
+        font-size: 1.1rem;
+        padding: 0.6rem 1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(248, 250, 252, 0.3);
+        letter-spacing: 0.2em;
+      }
+
+      .score-meta {
+        grid-column: 1 / -1;
+        text-align: center;
+        font-size: 0.9rem;
+        color: rgba(226, 232, 240, 0.7);
+      }
+
+      .model-card {
+        border-radius: 20px;
+        border: 1px solid var(--stroke);
+        padding: 1.2rem;
+        background: rgba(6, 11, 25, 0.85);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .model-card h3 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+
+      .model-card p {
+        margin: 0.4rem 0 0;
+        font-size: 0.9rem;
+        color: rgba(226, 232, 240, 0.75);
+      }
+
+      .prob-bar {
+        margin-top: 1rem;
+      }
+
+      .prob-bar span {
+        display: block;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(226, 232, 240, 0.7);
+      }
+
+      .prob-track {
+        width: 100%;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.25);
+        overflow: hidden;
+        margin-top: 0.3rem;
+      }
+
+      .prob-track div {
+        height: 100%;
+        border-radius: inherit;
+      }
+
+      .model-card button {
+        margin-top: 1rem;
+        border-radius: 10px;
+        padding: 0.55rem 0.8rem;
+        border: none;
+        background: rgba(255, 255, 255, 0.08);
+        color: inherit;
+        cursor: pointer;
+      }
+
+      .score-tag {
+        margin-top: 0.8rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 10px;
+        background: rgba(250, 204, 21, 0.12);
+        border: 1px solid rgba(250, 204, 21, 0.4);
+        font-size: 0.85rem;
+        display: inline-flex;
+        gap: 0.35rem;
+        align-items: center;
+      }
+
+      .consensus-box {
+        margin-top: 1.5rem;
+        padding: 1rem 1.2rem;
+        border-radius: 18px;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        background: rgba(3, 7, 18, 0.75);
+      }
+
+      .consensus-box strong {
+        font-size: 1.1rem;
+      }
+
+      .consensus-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin-top: 0.9rem;
+      }
+
+      .manual-score {
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+      }
+
+      .manual-score label {
+        text-transform: none;
+        letter-spacing: 0.02em;
+        font-size: 0.9rem;
+        color: rgba(226, 232, 240, 0.85);
+      }
+
+      .score-inputs {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        padding: 0.35rem 0.7rem;
+        border-radius: 10px;
+      }
+
+      .score-inputs input {
+        width: 3.2rem;
+        border: none;
+        background: transparent;
+        color: inherit;
+        font-size: 1rem;
+        text-align: center;
+      }
+
+      .bracket-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+        gap: 1.5rem;
+      }
+
+      .bracket-board-visual {
+        margin-top: 1.5rem;
+        border-radius: 28px;
+        border: 1px solid rgba(250, 204, 21, 0.4);
+        background: radial-gradient(circle at 20% 20%, rgba(248, 113, 113, 0.12), transparent 50%),
+          radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.12), transparent 55%),
+          linear-gradient(135deg, rgba(11, 18, 40, 0.95), rgba(4, 6, 18, 0.85));
+        padding: 1.8rem;
+      }
+
+      .bracket-board-visual h3 {
+        margin: 0 0 1rem;
+        text-align: center;
+        font-size: 1.2rem;
+        letter-spacing: 0.12em;
+        color: rgba(248, 250, 252, 0.8);
+      }
+
+      .bracket-columns {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1.2rem;
+      }
+
+      .bracket-column {
+        background: rgba(8, 12, 30, 0.6);
+        border-radius: 20px;
+        padding: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        position: relative;
+      }
+
+      .bracket-column::before {
+        content: "";
+        position: absolute;
+        inset: 6px;
+        border-radius: 16px;
+        border: 1px dashed rgba(148, 163, 184, 0.15);
+        pointer-events: none;
+      }
+
+      .bracket-column h4 {
+        margin: 0 0 0.8rem;
+        text-align: center;
+        font-size: 0.95rem;
+        letter-spacing: 0.08em;
+        color: rgba(148, 197, 255, 0.9);
+      }
+
+      .bracket-match {
+        border-radius: 16px;
+        padding: 0.8rem;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        margin-bottom: 0.9rem;
+        position: relative;
+      }
+
+      .bracket-match::after {
+        content: "";
+        position: absolute;
+        right: -20px;
+        top: 50%;
+        width: 18px;
+        height: 1px;
+        background: rgba(148, 163, 184, 0.25);
+      }
+
+      .bracket-column:last-child .bracket-match::after {
+        display: none;
+      }
+
+      .team-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        font-size: 0.9rem;
+        padding: 0.2rem 0;
+      }
+
+      .team-row strong {
+        flex: 1;
+      }
+
+      .team-row .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(148, 163, 184, 0.4);
+        margin-right: 0.5rem;
+      }
+
+      .team-row .win-tag {
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        border: 1px solid rgba(250, 204, 21, 0.6);
+        color: rgba(250, 204, 21, 0.85);
+      }
+
+      .match-meta {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(148, 163, 184, 0.8);
+      }
+
+      .bracket-placeholder {
+        border-radius: 16px;
+        padding: 1rem;
+        border: 1px dashed rgba(148, 163, 184, 0.4);
+        text-align: center;
+        color: rgba(226, 232, 240, 0.65);
+        font-size: 0.85rem;
+      }
+
+      .round-board {
+        border-radius: 20px;
+        border: 1px solid var(--stroke);
+        padding: 1.2rem;
+        background: rgba(7, 13, 28, 0.85);
+      }
+
+      .round-board h3 {
+        margin: 0 0 0.8rem;
+        font-size: 1.05rem;
+        color: rgba(148, 197, 255, 0.95);
+      }
+
+      .match-card {
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        border-radius: 16px;
+        padding: 0.9rem 1rem;
+        margin-bottom: 0.8rem;
+        background: rgba(2, 6, 23, 0.7);
+      }
+
+      .match-line {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.95rem;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.2rem 0.7rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+      }
+
+      .team-cloud {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+
+      .team-cloud span {
+        padding: 0.35rem 0.75rem;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        font-size: 0.85rem;
+      }
+
+      .champion-card {
+        border-radius: 24px;
+        border: 1px solid rgba(250, 204, 21, 0.6);
+        padding: 1.8rem;
+        background: linear-gradient(135deg, rgba(250, 204, 21, 0.15), rgba(250, 204, 21, 0.02));
+        text-align: center;
+      }
+
+      .champion-card h3 {
+        margin: 0;
+        font-size: 1rem;
+        letter-spacing: 0.15em;
+        color: rgba(250, 204, 21, 0.9);
+      }
+
+      .champion-card p {
+        margin: 0.8rem 0 0;
+        font-size: 2rem;
+        font-weight: 600;
+      }
+
+      .schedule-table-wrapper {
+        margin-top: 1.5rem;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 20px;
+        background: rgba(4, 9, 20, 0.8);
+        padding: 1.2rem 1.4rem;
+      }
+
+      .schedule-table-wrapper h3 {
+        margin: 0 0 0.8rem;
+        font-size: 1.05rem;
+        color: rgba(148, 197, 255, 0.95);
+      }
+
+      table.schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+      }
+
+      table.schedule-table th,
+      table.schedule-table td {
+        padding: 0.65rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      }
+
+      table.schedule-table th {
+        font-weight: 600;
+        color: rgba(226, 232, 240, 0.85);
+      }
+
+      table.schedule-table tbody tr:hover {
+        background: rgba(56, 189, 248, 0.08);
+      }
+
+      footer {
+        text-align: center;
+        color: rgba(226, 232, 240, 0.6);
+        font-size: 0.85rem;
+      }
+
+      @media (max-width: 1024px) {
+        .bracket-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 600px) {
+        header.hero,
+        section.panel {
+          padding: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="orbital" aria-hidden="true"></div>
+    <main>
+      <header class="hero">
+        <div>
+          <div class="hero-badges">
+            <span class="badge">8 支球队</span>
+            <span class="badge">3 套模型</span>
+            <span class="badge">自定义赛程</span>
+          </div>
+          <h1>AiScoPre 预测擂台 · 豆包 × OpenAI × DeepSeek</h1>
+          <p>
+            先用 FIFA 经典 8 强阵容做演示，挑选任意两支球队即可获得三模型胜率，并将胜者推进下一轮直至决出
+            概率均为前端占位逻辑，后续可无缝切换到真实推理接口。
+          </p>
+        </div>
+        <div>
+          <div class="metric-wrap">
+            <div class="metric-card">
+              <h3>当前轮次</h3>
+              <p id="metricRound">第 1 轮</p>
+            </div>
+            <div class="metric-card">
+              <h3>剩余球队</h3>
+              <p id="metricTeams">8</p>
+            </div>
+            <div class="metric-card">
+              <h3>已完成场次</h3>
+              <p id="metricMatches">0</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="panel">
+        <h2>自定义对阵与预测</h2>
+        <div class="control-grid">
+          <div class="control-card">
+            <label for="teamLeft">左侧球队</label>
+            <select id="teamLeft"></select>
+          </div>
+          <div class="control-card">
+            <label for="teamRight">右侧球队</label>
+            <select id="teamRight"></select>
+          </div>
+          <div class="control-card">
+            <label for="matchLabel">场次标签</label>
+            <input id="matchLabel" type="text" placeholder="例如：北美主场 + 夜场" />
+          </div>
+          <div class="control-card">
+            <label>&nbsp;</label>
+            <button id="simulateBtn" class="primary">生成多模型预测</button>
+            <small>仅保留当轮仍在场球队；完成本轮后自动进入下一轮。</small>
+          </div>
+        </div>
+        <div id="statusLine" class="status-line" style="display: none"></div>
+      </section>
+
+      <section class="panel" id="predictionPanel" style="display: none">
+        <h2>模型结果</h2>
+        <div id="scoreboard" class="scoreboard" style="display: none">
+          <div class="team-side">
+            <span>左侧</span>
+            <h3 id="scoreLeft">--</h3>
+          </div>
+          <div class="versus">VS</div>
+          <div class="team-side">
+            <span>右侧</span>
+            <h3 id="scoreRight">--</h3>
+          </div>
+          <div class="score-meta" id="scoreMeta">请先生成一场对阵</div>
+        </div>
+        <div class="prediction-grid" id="modelCards"></div>
+        <div class="consensus-box" id="consensusBox"></div>
+      </section>
+
+      <section class="panel">
+        <h2>赛程推进</h2>
+        <div class="bracket-layout">
+          <div id="roundBoards"></div>
+          <div>
+            <div class="round-board">
+              <h3>当前轮可用球队</h3>
+              <div id="teamCloud" class="team-cloud"></div>
+            </div>
+            <div style="margin-top: 1rem" class="round-board">
+              <h3>下一轮待定</h3>
+              <div id="nextCloud" class="team-cloud"></div>
+            </div>
+            <div style="margin-top: 1rem" class="champion-card">
+              <h3>冠军</h3>
+              <p id="championName">尚未决出</p>
+              <small id="championTrail" style="display: block; margin-top: 0.6rem; color: rgba(248, 250, 252, 0.7);"></small>
+            </div>
+          </div>
+        </div>
+        <div class="bracket-board-visual">
+          <h3>淘汰赛程图</h3>
+          <div id="bracketBoard" class="bracket-columns"></div>
+        </div>
+        <div class="schedule-table-wrapper">
+          <h3>足球赛程表</h3>
+          <table class="schedule-table">
+            <thead>
+              <tr>
+                <th>轮次</th>
+                <th>场次标签</th>
+                <th>对阵</th>
+                <th>胜者</th>
+                <th>预测比分</th>
+                <th>决策</th>
+                <th>均值胜率</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer>
+        当前页面仅用于前端原型演示；胜率由固定随机公式生成。接入真实 AI 模型后，只需调用后端接口替换
+        <code>predictMatch</code> 函数即可。
+      </footer>
+    </main>
+
+    <script>
+      const teams = [
+        "阿根廷",
+        "法国",
+        "克罗地亚",
+        "摩洛哥",
+        "巴西",
+        "荷兰",
+        "英格兰",
+        "葡萄牙"
+      ];
+
+      const models = [
+        { id: "doubao", name: "豆包", accent: "#4ade80" },
+        { id: "openai", name: "OpenAI", accent: "#38bdf8" },
+        { id: "deepseek", name: "DeepSeek", accent: "#fb923c" }
+      ];
+
+      const state = {
+        round: 1,
+        roundPool: [...teams],
+        nextPool: [],
+        roundMatches: {},
+        predictions: null,
+        champion: null,
+        totalMatches: 0,
+        matchCountThisRound: 0
+      };
+
+      const refs = {
+        teamLeft: document.getElementById("teamLeft"),
+        teamRight: document.getElementById("teamRight"),
+        matchLabel: document.getElementById("matchLabel"),
+        simulateBtn: document.getElementById("simulateBtn"),
+        modelCards: document.getElementById("modelCards"),
+        predictionPanel: document.getElementById("predictionPanel"),
+        scoreboard: document.getElementById("scoreboard"),
+        scoreLeft: document.getElementById("scoreLeft"),
+        scoreRight: document.getElementById("scoreRight"),
+        scoreMeta: document.getElementById("scoreMeta"),
+        consensusBox: document.getElementById("consensusBox"),
+        statusLine: document.getElementById("statusLine"),
+        roundBoards: document.getElementById("roundBoards"),
+        teamCloud: document.getElementById("teamCloud"),
+        nextCloud: document.getElementById("nextCloud"),
+        championName: document.getElementById("championName"),
+        championTrail: document.getElementById("championTrail"),
+        metricRound: document.getElementById("metricRound"),
+        metricTeams: document.getElementById("metricTeams"),
+        metricMatches: document.getElementById("metricMatches"),
+        scheduleTableBody: document.getElementById("scheduleTableBody"),
+        bracketBoard: document.getElementById("bracketBoard"),
+        manualScoreLeft: null,
+        manualScoreRight: null
+      };
+
+      function updateStatus(message, type = "info") {
+        if (!message) {
+          refs.statusLine.style.display = "none";
+          return;
+        }
+        refs.statusLine.style.display = "block";
+        refs.statusLine.textContent = message;
+        refs.statusLine.className = `status-line${type === "error" ? " error" : ""}`;
+      }
+
+      function seededRandom(seed) {
+        let hash = 0;
+        for (let i = 0; i < seed.length; i += 1) {
+          hash = (hash << 5) - hash + seed.charCodeAt(i);
+          hash |= 0;
+        }
+        const x = Math.sin(hash) * 10000;
+        return x - Math.floor(x);
+      }
+
+      function predictMatch(left, right) {
+        const baseSeed = `${left}-${right}-R${state.round}`;
+        return models.map((model, idx) => {
+          const factor = seededRandom(baseSeed + model.id + idx);
+          const leftProb = 0.35 + factor * 0.3 + (idx - 1) * 0.02;
+          const clampedLeft = Math.min(Math.max(leftProb, 0.08), 0.9);
+          const rightProb = 1 - clampedLeft;
+          const confidence = 0.7 + seededRandom(model.id + baseSeed) * 0.25;
+          const leftGoals = Math.max(
+            0,
+            Math.round(clampedLeft * 3 + seededRandom(baseSeed + model.id + "lg") * 1.4 - 0.2)
+          );
+          const rightGoals = Math.max(
+            0,
+            Math.round(rightProb * 3 + seededRandom(baseSeed + model.id + "rg") * 1.4 - 0.2)
+          );
+          return {
+            modelId: model.id,
+            leftProb: clampedLeft,
+            rightProb,
+            confidence: Math.min(0.95, confidence),
+            score: { left: leftGoals, right: rightGoals }
+          };
+        });
+      }
+
+      function populateSelect(selectEl, exclude, preferred) {
+        const previous = preferred ?? selectEl.value;
+        selectEl.innerHTML = "";
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "选择球队";
+        selectEl.appendChild(placeholder);
+        state.roundPool.forEach((team) => {
+          if (team === exclude) return;
+          const option = document.createElement("option");
+          option.value = team;
+          option.textContent = team;
+          selectEl.appendChild(option);
+        });
+        if (previous && previous !== exclude && state.roundPool.includes(previous)) {
+          selectEl.value = previous;
+        }
+      }
+
+      function renderTeamPools() {
+        refs.teamCloud.innerHTML = "";
+        state.roundPool.forEach((team) => {
+          const span = document.createElement("span");
+          span.textContent = team;
+          refs.teamCloud.appendChild(span);
+        });
+        refs.nextCloud.innerHTML = "";
+        state.nextPool.forEach((team) => {
+          const span = document.createElement("span");
+          span.textContent = team;
+          refs.nextCloud.appendChild(span);
+        });
+      }
+
+      function renderMetrics() {
+        refs.metricRound.textContent = `第 ${state.round} 轮`;
+        refs.metricTeams.textContent = state.roundPool.length;
+        refs.metricMatches.textContent = state.totalMatches;
+      }
+
+      function renderModelCards() {
+        const { predictions } = state;
+        if (!predictions) {
+          refs.predictionPanel.style.display = "none";
+          refs.scoreboard.style.display = "none";
+          return;
+        }
+        refs.predictionPanel.style.display = "block";
+        refs.scoreboard.style.display = "grid";
+        refs.scoreLeft.textContent = predictions.left;
+        refs.scoreRight.textContent = predictions.right;
+        const consensusScore = predictions.consensusScore;
+        refs.modelCards.innerHTML = "";
+        predictions.entries.forEach((entry) => {
+          const modelMeta = models.find((m) => m.id === entry.modelId);
+          const card = document.createElement("article");
+          card.className = "model-card";
+          card.innerHTML = `
+            <h3 style="color:${modelMeta.accent}">${modelMeta.name}</h3>
+            <p>置信度 ${(entry.confidence * 100).toFixed(0)}%</p>
+            <div class="prob-bar">
+              <span>${predictions.left} 胜率 ${(entry.leftProb * 100).toFixed(1)}%</span>
+              <div class="prob-track"><div style="width:${entry.leftProb * 100}%;background:${modelMeta.accent};"></div></div>
+            </div>
+            <div class="prob-bar">
+              <span>${predictions.right} 胜率 ${(entry.rightProb * 100).toFixed(1)}%</span>
+              <div class="prob-track"><div style="width:${entry.rightProb * 100}%;background:${modelMeta.accent};"></div></div>
+            </div>
+            <div class="score-tag">预测比分：${entry.score.left} - ${entry.score.right}</div>
+            <button data-model="${entry.modelId}">按 ${modelMeta.name} 结果晋级</button>
+          `;
+          card.querySelector("button").addEventListener("click", () => {
+            const winner = entry.leftProb >= entry.rightProb ? predictions.left : predictions.right;
+            commitMatch(winner, `采用 ${modelMeta.name}`, entry.score);
+          });
+          refs.modelCards.appendChild(card);
+        });
+
+        const consensus = predictions.consensus;
+        refs.consensusBox.innerHTML = `
+          <strong>AI 共识：${consensus.winner}</strong>
+          <p style="margin:0.4rem 0 0; color: rgba(226,232,240,0.75);">
+            平均胜率 ${(consensus.winProb * 100).toFixed(1)}%，通过三套模型的均值 + 势能调和得到。
+          </p>
+          <div class="manual-score">
+            <label>自定义比分</label>
+            <div class="score-inputs">
+              <input type="number" id="manualScoreLeft" min="0" step="1" />
+              <span>:</span>
+              <input type="number" id="manualScoreRight" min="0" step="1" />
+            </div>
+          </div>
+          <div class="consensus-actions">
+            <button class="primary" id="acceptAi">采用 AI 预测晋级</button>
+            <button class="ghost" id="manualLeft">手动指定 ${predictions.left}</button>
+            <button class="ghost" id="manualRight">手动指定 ${predictions.right}</button>
+          </div>
+        `;
+        refs.manualScoreLeft = document.getElementById("manualScoreLeft");
+        refs.manualScoreRight = document.getElementById("manualScoreRight");
+        refs.manualScoreLeft.value = consensusScore.left;
+        refs.manualScoreRight.value = consensusScore.right;
+        const handleScoreInput = () => updateScoreMeta();
+        refs.manualScoreLeft.addEventListener("input", handleScoreInput);
+        refs.manualScoreRight.addEventListener("input", handleScoreInput);
+        updateScoreMeta();
+        document.getElementById("acceptAi").addEventListener("click", () => commitMatch(consensus.winner, "AI 共识"));
+        document.getElementById("manualLeft").addEventListener("click", () => commitMatch(predictions.left, "手动指定", getManualScoreInput()));
+        document.getElementById("manualRight").addEventListener("click", () => commitMatch(predictions.right, "手动指定", getManualScoreInput()));
+      }
+
+      function renderRounds() {
+        refs.roundBoards.innerHTML = "";
+        Object.keys(state.roundMatches)
+          .sort((a, b) => Number(a) - Number(b))
+          .forEach((roundKey) => {
+            const board = document.createElement("div");
+            board.className = "round-board";
+            board.innerHTML = `<h3>第 ${roundKey} 轮</h3>`;
+            state.roundMatches[roundKey].forEach((match) => {
+              const matchCard = document.createElement("div");
+              matchCard.className = "match-card";
+              matchCard.innerHTML = `
+                <div class="match-line">
+                  <span>${match.left} vs ${match.right}</span>
+                  <span class="chip">${match.reason}</span>
+                </div>
+                <div class="match-line" style="margin-top:0.4rem; font-size:0.85rem; color:rgba(226,232,240,0.75);">
+                  <span>胜者：${match.winner}</span>
+                  <span>预测比分：${match.score?.left ?? "-"}-${match.score?.right ?? "-"}</span>
+                </div>
+                <div class="match-line" style="margin-top:0.25rem; font-size:0.8rem; color:rgba(226,232,240,0.6);">
+                  <span></span>
+                  <span>均值 ${(match.consensus * 100).toFixed(1)}%</span>
+                </div>
+              `;
+              board.appendChild(matchCard);
+            });
+            refs.roundBoards.appendChild(board);
+          });
+      }
+
+      function renderChampion() {
+        if (state.champion) {
+          refs.championName.textContent = state.champion;
+          refs.championTrail.textContent = `共进行 ${state.totalMatches} 场模拟，来源第 ${state.round} 轮完成`;
+        } else {
+          refs.championName.textContent = "尚未决出";
+          refs.championTrail.textContent = "";
+        }
+      }
+
+      function getManualScoreInput() {
+        if (!refs.manualScoreLeft || !refs.manualScoreRight) return null;
+        const left = Number(refs.manualScoreLeft.value);
+        const right = Number(refs.manualScoreRight.value);
+        if (Number.isFinite(left) && Number.isFinite(right)) {
+          return { left, right };
+        }
+        return null;
+      }
+
+      function updateScoreMeta() {
+        if (!state.predictions) return;
+        const custom = getManualScoreInput();
+        const scoreToShow = custom || state.predictions.consensusScore;
+        refs.scoreMeta.textContent = `${state.predictions.label || `第 ${state.round} 轮 对决`} · 预测比分 ${scoreToShow.left} - ${scoreToShow.right}`;
+      }
+
+      function renderScheduleTable() {
+        const rows = [];
+        Object.keys(state.roundMatches).forEach((roundKey) => {
+          state.roundMatches[roundKey].forEach((match) => {
+            rows.push({ round: Number(roundKey), ...match });
+          });
+        });
+        rows.sort((a, b) => a.order - b.order);
+        refs.scheduleTableBody.innerHTML = "";
+        if (!rows.length) {
+          const emptyRow = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 7;
+          cell.style.textAlign = "center";
+          cell.style.color = "rgba(226,232,240,0.7)";
+          cell.textContent = "暂无对阵，先创建一场比赛吧";
+          emptyRow.appendChild(cell);
+          refs.scheduleTableBody.appendChild(emptyRow);
+          return;
+        }
+        rows.forEach((row) => {
+          const labelText = row.label || `第 ${row.round} 轮 对决`;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>第 ${row.round} 轮</td>
+            <td>${labelText}</td>
+            <td>${row.left} vs ${row.right}</td>
+            <td>${row.winner}</td>
+            <td>${row.score ? `${row.score.left}-${row.score.right}` : "--"}</td>
+            <td>${row.reason}</td>
+            <td>${(row.consensus * 100).toFixed(1)}%</td>
+          `;
+          refs.scheduleTableBody.appendChild(tr);
+        });
+      }
+
+      function renderBracketBoard() {
+        const container = refs.bracketBoard;
+        container.innerHTML = "";
+        const roundKeys = Object.keys(state.roundMatches)
+          .map(Number)
+          .sort((a, b) => a - b);
+        if (!roundKeys.length) {
+          const placeholder = document.createElement("div");
+          placeholder.className = "bracket-placeholder";
+          placeholder.textContent = "暂无晋级路径，先完成一场对阵试试";
+          container.appendChild(placeholder);
+          return;
+        }
+        roundKeys.forEach((roundKey) => {
+          const column = document.createElement("div");
+          column.className = "bracket-column";
+          column.innerHTML = `<h4>第 ${roundKey} 轮</h4>`;
+          state.roundMatches[roundKey].forEach((match) => {
+            const matchCard = document.createElement("div");
+            matchCard.className = "bracket-match";
+            matchCard.innerHTML = `
+              <div class="team-row">
+                <span class="dot"></span>
+                <strong>${match.left}</strong>
+                ${match.winner === match.left ? '<span class="win-tag">WIN</span>' : ""}
+              </div>
+              <div class="team-row">
+                <span class="dot"></span>
+                <strong>${match.right}</strong>
+                ${match.winner === match.right ? '<span class="win-tag">WIN</span>' : ""}
+              </div>
+              <div class="match-meta">${match.label || "定制场次"} · 预测比分 ${match.score?.left ?? "-"}-${match.score?.right ?? "-"}</div>
+            `;
+            column.appendChild(matchCard);
+          });
+          if (!state.roundMatches[roundKey].length) {
+            const empty = document.createElement("div");
+            empty.className = "bracket-placeholder";
+            empty.textContent = "等待创建对阵";
+            column.appendChild(empty);
+          }
+          container.appendChild(column);
+        });
+        if (!state.champion && state.roundPool.length) {
+          const upcomingColumn = document.createElement("div");
+          upcomingColumn.className = "bracket-column";
+          upcomingColumn.innerHTML = `<h4>第 ${state.round} 轮</h4>`;
+          const msg = document.createElement("div");
+          msg.className = "bracket-placeholder";
+          msg.textContent = `共 ${state.roundPool.length} 支球队等待配对`;
+          upcomingColumn.appendChild(msg);
+          container.appendChild(upcomingColumn);
+        }
+      }
+
+      function commitMatch(winner, reason, scoreOverride) {
+        if (!state.predictions) return;
+        const { left, right, entries, consensus, label, consensusScore } = state.predictions;
+        const matchInfo = {
+          left,
+          right,
+          winner,
+          reason,
+          consensus: consensus.winProb,
+          label: label || `第 ${state.round} 轮 第 ${state.matchCountThisRound + 1} 场`,
+          order: state.totalMatches + 1,
+          score: scoreOverride || consensusScore
+        };
+        if (!state.roundMatches[state.round]) state.roundMatches[state.round] = [];
+        state.roundMatches[state.round].push(matchInfo);
+        state.matchCountThisRound += 1;
+        state.totalMatches += 1;
+
+        state.roundPool = state.roundPool.filter((team) => team !== left && team !== right);
+        if (!state.nextPool.includes(winner)) state.nextPool.push(winner);
+
+        state.predictions = null;
+        renderModelCards();
+        updateStatus(`已将 ${winner} 推进下一轮。`);
+        advanceIfNeeded();
+        populateSelects();
+        renderTeamPools();
+        renderMetrics();
+        renderRounds();
+        renderChampion();
+        renderScheduleTable();
+        renderBracketBoard();
+      }
+
+      function advanceIfNeeded() {
+        if (state.roundPool.length > 1) {
+          return;
+        }
+        if (state.roundPool.length === 1) {
+          const bye = state.roundPool.pop();
+          if (!state.nextPool.includes(bye)) state.nextPool.push(bye);
+        }
+        if (state.nextPool.length === 1) {
+          state.champion = state.nextPool[0];
+          state.roundPool = [];
+          state.nextPool = [];
+          updateStatus(`冠军诞生：${state.champion}`, "info");
+        } else if (state.nextPool.length > 1) {
+          state.round += 1;
+          state.roundPool = [...state.nextPool];
+          state.nextPool = [];
+          state.matchCountThisRound = 0;
+          updateStatus(`第 ${state.round} 轮 已启用，剩余 ${state.roundPool.length} 支球队。`);
+        }
+      }
+
+      function populateSelects() {
+        populateSelect(refs.teamLeft, refs.teamRight.value, refs.teamLeft.value);
+        populateSelect(refs.teamRight, refs.teamLeft.value, refs.teamRight.value);
+      }
+
+      function simulatePrediction() {
+        const left = refs.teamLeft.value;
+        const right = refs.teamRight.value;
+        if (!left || !right) {
+          updateStatus("请先选择左右两支球队。", "error");
+          return;
+        }
+        if (left === right) {
+          updateStatus("同一球队无法互相对阵。", "error");
+          return;
+        }
+        if (!state.roundPool.includes(left) || !state.roundPool.includes(right)) {
+          updateStatus("所选球队不在当前轮次或已被淘汰。", "error");
+          return;
+        }
+        const entries = predictMatch(left, right);
+        const avgLeft = entries.reduce((acc, cur) => acc + cur.leftProb, 0) / entries.length;
+        const avgRight = 1 - avgLeft;
+        const avgScoreLeft = Math.round(entries.reduce((acc, cur) => acc + cur.score.left, 0) / entries.length);
+        const avgScoreRight = Math.round(entries.reduce((acc, cur) => acc + cur.score.right, 0) / entries.length);
+        const winner = avgLeft >= avgRight ? left : right;
+        state.predictions = {
+          left,
+          right,
+          entries,
+          consensus: { winner, winProb: Math.max(avgLeft, avgRight) },
+          consensusScore: { left: avgScoreLeft, right: avgScoreRight },
+          label: refs.matchLabel.value.trim()
+        };
+        renderModelCards();
+        updateStatus(`${left} vs ${right} 的预测已生成。`);
+      }
+
+      refs.teamLeft.addEventListener("change", () => {
+        populateSelect(refs.teamRight, refs.teamLeft.value, refs.teamRight.value);
+      });
+      refs.teamRight.addEventListener("change", () => {
+        populateSelect(refs.teamLeft, refs.teamRight.value, refs.teamLeft.value);
+      });
+      refs.simulateBtn.addEventListener("click", simulatePrediction);
+
+      function init() {
+        populateSelects();
+        renderTeamPools();
+        renderMetrics();
+        renderRounds();
+        renderChampion();
+        renderScheduleTable();
+        renderBracketBoard();
+      }
+
+      init();
+    </script>
+  </body>
+</html>

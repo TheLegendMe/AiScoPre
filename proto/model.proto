@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package aiscopre.model;
+
+service ModelService {
+  rpc PredictMatchOutcome(PredictMatchOutcomeRequest) returns (PredictMatchOutcomeResponse);
+}
+
+message PredictMatchOutcomeRequest {
+  repeated float features = 1;
+}
+
+message PredictMatchOutcomeResponse {
+  // Probabilities for home win / draw / away win.
+  float home_win_prob = 1;
+  float draw_prob = 2;
+  float away_win_prob = 3;
+}
+

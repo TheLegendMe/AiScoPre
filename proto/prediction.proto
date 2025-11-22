@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package aiscopre.prediction;
+
+import "common.proto";
+
+service PredictionService {
+  // Simple request/response prediction.
+  rpc GetPrediction(GetPredictionRequest) returns (GetPredictionResponse);
+
+  // Real-time streaming prediction update during a match.
+  rpc StreamPrediction(StreamPredictionRequest) returns (stream GetPredictionResponse);
+}
+
+message GetPredictionRequest {
+  string match_id = 1;
+}
+
+message GetPredictionResponse {
+  string match_id = 1;
+  aiscopre.common.Match match = 2;
+  float home_win_prob = 3;
+  float draw_prob = 4;
+  float away_win_prob = 5;
+}
+
+message StreamPredictionRequest {
+  string match_id = 1;
+}

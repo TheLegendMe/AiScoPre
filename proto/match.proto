@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package aiscopre.match;
+
+import "common.proto";
+
+service MatchService {
+  rpc GetMatch(GetMatchRequest) returns (GetMatchResponse);
+  rpc ListMatches(ListMatchesRequest) returns (ListMatchesResponse);
+  rpc PushEvent(PushEventRequest) returns (PushEventResponse);
+}
+
+message GetMatchRequest {
+  string match_id = 1;
+}
+
+message GetMatchResponse {
+  aiscopre.common.Match match = 1;
+}
+
+message ListMatchesRequest {
+  // Optional filter by stage.
+  string stage = 1;
+}
+
+message ListMatchesResponse {
+  repeated aiscopre.common.Match matches = 1;
+}
+
+message PushEventRequest {
+  aiscopre.common.MatchEvent event = 1;
+}
+
+message PushEventResponse {
+  bool ok = 1;
+}

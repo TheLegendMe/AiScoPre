@@ -1,0 +1,91 @@
+{
+  "tournament": {
+    "name": "FIFA World Cup 2026",
+    "hosts": [
+      "Canada",
+      "Mexico",
+      "United States"
+    ],
+    "start_date": "2026-06-11",
+    "end_date": "2026-07-19",
+    "cities": [
+      "Vancouver",
+      "Toronto",
+      "Mexico City",
+      "Guadalajara",
+      "Monterrey",
+      "Los Angeles",
+      "Dallas",
+      "Atlanta",
+      "New York / New Jersey",
+      "Miami",
+      "Kansas City",
+      "Seattle",
+      "Houston",
+      "San Francisco Bay Area",
+      "Boston",
+      "Philadelphia"
+    ],
+    "description": "Sample data compiled for local development. Replace via scripts/scrape_wc2026.py when real data is available."
+  },
+  "odds_last_updated": "2024-07-16T00:00:00Z",
+  "source": "SampleData",
+  "odds": [
+    {
+      "team_id": "ARG",
+      "team_name": "Argentina",
+      "decimal_odds": 5.5,
+      "implied_probability": 0.1818,
+      "source_url": "https://example.com/world-cup-2026/odds"
+    },
+    {
+      "team_id": "BRA",
+      "team_name": "Brazil",
+      "decimal_odds": 6.0,
+      "implied_probability": 0.1667,
+      "source_url": "https://example.com/world-cup-2026/odds"
+    },
+    {
+      "team_id": "ENG",
+      "team_name": "England",
+      "decimal_odds": 7.0,
+      "implied_probability": 0.1429,
+      "source_url": "https://example.com/world-cup-2026/odds"
+    },
+    {
+      "team_id": "FRA",
+      "team_name": "France",
+      "decimal_odds": 6.5,
+      "implied_probability": 0.1538,
+      "source_url": "https://example.com/world-cup-2026/odds"
+    },
+    {
+      "team_id": "GER",
+      "team_name": "Germany",
+      "decimal_odds": 9.0,
+      "implied_probability": 0.1111,
+      "source_url": "https://example.com/world-cup-2026/odds"
+    },
+    {
+      "team_id": "ESP",
+      "team_name": "Spain",
+      "decimal_odds": 8.0,
+      "implied_probability": 0.125,
+      "source_url": "https://example.com/world-cup-2026/odds"
+    },
+    {
+      "team_id": "USA",
+      "team_name": "United States",
+      "decimal_odds": 13.0,
+      "implied_probability": 0.0769,
+      "source_url": "https://example.com/world-cup-2026/odds"
+    },
+    {
+      "team_id": "POR",
+      "team_name": "Portugal",
+      "decimal_odds": 12.0,
+      "implied_probability": 0.0833,
+      "source_url": "https://example.com/world-cup-2026/odds"
+    }
+  ]
+}

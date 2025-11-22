@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package aiscopre.feature;
+
+service FeatureService {
+  rpc BuildMatchFeatures(BuildMatchFeaturesRequest) returns (BuildMatchFeaturesResponse);
+}
+
+message BuildMatchFeaturesRequest {
+  string match_id = 1;
+}
+
+message BuildMatchFeaturesResponse {
+  // Simple dense feature vector.
+  repeated float features = 1;
+}
+

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package aiscopre.team;
+
+import "common.proto";
+
+service TeamService {
+  rpc GetTeam(GetTeamRequest) returns (GetTeamResponse);
+  rpc ListTeams(ListTeamsRequest) returns (ListTeamsResponse);
+}
+
+message GetTeamRequest {
+  string team_id = 1;
+}
+
+message GetTeamResponse {
+  aiscopre.common.Team team = 1;
+}
+
+message ListTeamsRequest {
+}
+
+message ListTeamsResponse {
+  repeated aiscopre.common.Team teams = 1;
+}

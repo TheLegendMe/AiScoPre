@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package aiscopre.common;
+
+// Common types shared across services.
+
+message Team {
+  string id = 1;
+  string name = 2;
+  string country = 3;
+  int32 elo_rating = 4;
+}
+
+message Match {
+  string id = 1;
+  string home_team_id = 2;
+  string away_team_id = 3;
+  string kick_off_utc = 4;
+  string stage = 5;
+}
+
+enum MatchEventType {
+  MATCH_EVENT_TYPE_UNKNOWN = 0;
+  GOAL = 1;
+  RED_CARD = 2;
+  YELLOW_CARD = 3;
+}
+
+message MatchEvent {
+  string id = 1;
+  string match_id = 2;
+  MatchEventType type = 3;
+  string team_id = 4;
+  int32 minute = 5;
+  string description = 6;
+}
+

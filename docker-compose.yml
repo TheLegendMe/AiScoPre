@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+  match_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "services.match_service"]
+    ports:
+      - "50051:50051"
+
+  team_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "services.team_service"]
+    ports:
+      - "50052:50052"
+
+  user_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "services.user_service"]
+    ports:
+      - "50053:50053"
+
+  feature_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "services.feature_service"]
+    environment:
+      - MATCH_SERVICE_HOST=match_service
+      - TEAM_SERVICE_HOST=team_service
+    depends_on:
+      - match_service
+      - team_service
+    ports:
+      - "50054:50054"
+
+  model_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "services.model_service"]
+    ports:
+      - "50055:50055"
+
+  prediction_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "services.prediction_service"]
+    environment:
+      - FEATURE_SERVICE_HOST=feature_service
+      - MODEL_SERVICE_HOST=model_service
+      - MATCH_SERVICE_HOST=match_service
+    depends_on:
+      - feature_service
+      - model_service
+      - match_service
+    ports:
+      - "50056:50056"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "services.gateway"]
+    environment:
+      - PREDICTION_SERVICE_HOST=prediction_service
+    depends_on:
+      - prediction_service
+    ports:
+      - "8000:8000"
